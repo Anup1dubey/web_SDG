@@ -13,9 +13,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Database configuration based on environment
-DB_TYPE = os.getenv("DB_TYPE", "sqlite")
+# Check for DATABASE_URL first (Render, Heroku, Railway provide this)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-if DB_TYPE == "mysql":
+if DATABASE_URL:
+    # Handle Render's postgres:// URL format (need postgresql://)
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    
+    SQLALCHEMY_DATABASE_URL = DATABASE_URL
+    engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
+    
+elif os.getenv("DB_TYPE") == "mysql":
     # MySQL Configuration
     MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
     MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
@@ -25,8 +34,9 @@ if DB_TYPE == "mysql":
     
     SQLALCHEMY_DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
     engine = create_engine(SQLALCHEMY_DATABASE_URL, pool_pre_ping=True)
+    
 else:
-    # SQLite Configuration (default)
+    # SQLite Configuration (default for local development)
     SQLITE_FILE = os.getenv("SQLITE_FILE", "sdg_platform.db")
     SQLALCHEMY_DATABASE_URL = f"sqlite:///./{SQLITE_FILE}"
     engine = create_engine(
