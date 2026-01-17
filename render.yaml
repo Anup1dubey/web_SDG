@@ -17,14 +17,6 @@ services:
         generateValue: true
       - key: CORS_ORIGINS
         value: "*"
-    healthCheckPath: /api/health
-
-  # PostgreSQL Database
-  - type: pgsql
-    name: sdg-platform-db
-    plan: free
-    databaseName: sdg_platform
-    user: sdg_user
 
   # Static Frontend Service
   - type: web
@@ -33,10 +25,13 @@ services:
     plan: free
     buildCommand: echo "No build required for static site"
     staticPublishPath: ./frontend
-    routes:
-      - type: rewrite
-        source: /api/*
-        destination: https://sdg-platform-backend.onrender.com/api/*
     envVars:
       - key: API_URL
         value: https://sdg-platform-backend.onrender.com
+
+databases:
+  # PostgreSQL Database
+  - name: sdg-platform-db
+    plan: free
+    databaseName: sdg_platform
+    user: sdg_user
