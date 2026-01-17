@@ -3,7 +3,7 @@ services:
   - type: web
     name: sdg-platform-backend
     runtime: python
-    plan: free
+    plan: starter
     buildCommand: pip install -r backend/requirements.txt
     startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
     envVars:
@@ -22,7 +22,6 @@ services:
   - type: web
     name: sdg-platform-frontend
     runtime: static
-    plan: free
     buildCommand: echo "No build required for static site"
     staticPublishPath: ./frontend
     envVars:
@@ -32,6 +31,5 @@ services:
 databases:
   # PostgreSQL Database
   - name: sdg-platform-db
-    plan: free
     databaseName: sdg_platform
     user: sdg_user
