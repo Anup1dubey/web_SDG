@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organizations - SDG Digital Twin Platform</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-left">
+            <div class="nav-brand">
+                <span class="brand-icon">🌍</span>
+                <span class="brand-text">SDG Digital Twin Platform</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="nav-icon-btn" onclick="showNotifications()">
+                <span class="icon">🔔</span>
+                <span class="badge">3</span>
+            </button>
+            <div class="user-menu" onclick="toggleUserMenu()">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span class="user-name" id="userName">User</span>
+                <span class="icon">▼</span>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="profile.html">
+                        <span class="icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="#" onclick="event.preventDefault(); logout();">
+                        <span class="icon">🚪</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <span class="menu-icon">📊</span>
+                    <span>Overview</span>
+                </a>
+                <a href="twins.html" class="menu-item">
+                    <span class="menu-icon">🏙️</span>
+                    <span>Digital Twins</span>
+                </a>
+                <a href="simulations.html" class="menu-item">
+                    <span class="menu-icon">🔮</span>
+                    <span>Simulations</span>
+                </a>
+                <a href="projects.html" class="menu-item">
+                    <span class="menu-icon">📋</span>
+                    <span>Projects</span>
+                </a>
+                <a href="organizations.html" class="menu-item active">
+                    <span class="menu-icon">🏢</span>
+                    <span>Organizations</span>
+                </a>
+                <a href="profile.html" class="menu-item">
+                    <span class="menu-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="section-header">
+                <h2>🏢 Organizations</h2>
+                <button class="btn btn-primary" onclick="showCreateOrgModal()">+ Register Organization</button>
+            </div>
+            <div id="orgs-grid" class="orgs-grid"></div>
+        </main>
+    </div>
+
+    <!-- Create Organization Modal -->
+    <div id="create-org-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Register Organization</h3>
+                <button class="modal-close" onclick="closeModal('create-org-modal')">&times;</button>
+            </div>
+            <form id="create-org-form" onsubmit="createOrganization(event)">
+                <div class="form-group">
+                    <label>Organization Name *</label>
+                    <input type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Type *</label>
+                    <select name="type" required>
+                        <option value="NGO">NGO</option>
+                        <option value="Government">Government Agency</option>
+                        <option value="Private">Private Sector</option>
+                        <option value="Academic">Academic Institution</option>
+                        <option value="International">International Organization</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Focus SDGs (select multiple)</label>
+                    <div id="org-sdg-selector" class="sdg-selector-compact"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Inline helper functions
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) dropdown.classList.toggle('show');
+        }
+        
+        function showNotifications() {
+            alert('Notifications feature coming soon!');
+        }
+        
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+    </script>
+    <script>
+        // Organizations Page - Simplified Working Version
+        const API_BASE = 'http://localhost:8000';
+        let organizations = [];
+
+        // Load Organizations
+        async function loadOrganizations() {
+            console.log('Loading organizations...');
+            try {
+                const response = await fetch(`${API_BASE}/organizations`);
+                organizations = await response.json();
+                console.log(`✅ Loaded ${organizations.length} organizations`);
+                renderOrganizations();
+            } catch (error) {
+                console.error('Error loading organizations:', error);
+                document.getElementById('orgs-grid').innerHTML = '<p style="color: #ef4444;">Error loading organizations. Check console.</p>';
+            }
+        }
+
+        // Render Organizations
+        function renderOrganizations() {
+            const grid = document.getElementById('orgs-grid');
+            
+            if (organizations.length === 0) {
+                grid.innerHTML = '<p style="color: #64748b; padding: 20px;">No organizations yet. Register your first one!</p>';
+                return;
+            }
+            
+            grid.innerHTML = organizations.map(org => `
+                <div class="org-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; transition: all 0.2s; position: relative;">
+                    <button onclick="deleteOrganization(${org.id}, '${org.name.replace(/'/g, "\\'")}')" 
+                            style="position: absolute; top: 15px; right: 15px; background: #ef4444; color: white; border: none; border-radius: 6px; padding: 8px 12px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;"
+                            onmouseover="this.style.background='#dc2626'" 
+                            onmouseout="this.style.background='#ef4444'"
+                            title="Delete this organization">
+                        🗑️ Delete
+                    </button>
+                    <h3 style="margin: 0 0 10px 0; font-size: 18px; color: #1e293b; padding-right: 90px;">${org.name}</h3>
+                    <p style="color: #64748b; font-size: 14px; margin: 8px 0;">
+                        🏢 ${org.type}
+                    </p>
+                    <p style="font-size: 13px; color: #475569; margin: 12px 0;">
+                        ${org.description || 'No description'}
+                    </p>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                        ${org.focus_sdgs.map(sdg => `<span style="background: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">SDG ${sdg}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Delete Organization
+        async function deleteOrganization(orgId, orgName) {
+            if (!confirm(`⚠️ Are you sure you want to delete "${orgName}"?\n\nThis will also affect any projects linked to this organization.\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            console.log(`Deleting organization ID: ${orgId}`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/organizations/${orgId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${error}`);
+                }
+                
+                console.log('✅ Organization deleted successfully');
+                
+                // Reload the list
+                await loadOrganizations();
+                
+                alert(`✅ "${orgName}" has been deleted successfully!`);
+            } catch (error) {
+                console.error('Error deleting organization:', error);
+                alert(`❌ Error deleting organization: ${error.message}`);
+            }
+        }
+
+        // Create Organization
+        async function createOrganization(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            // Get selected SDGs from checkboxes
+            const selectedSDGs = Array.from(document.querySelectorAll('#org-sdg-selector input:checked'))
+                .map(cb => parseInt(cb.value));
+            
+            if (selectedSDGs.length === 0) {
+                alert('Please select at least one focus SDG');
+                return;
+            }
+            
+            const data = {
+                name: formData.get('name'),
+                type: formData.get('type'),
+                description: formData.get('description') || '',
+                focus_sdgs: selectedSDGs
+            };
+            
+            console.log('Creating Organization:', data);
+            
+            try {
+                const response = await fetch(`${API_BASE}/organizations`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${error}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ Created Organization:', result);
+                
+                closeModal('create-org-modal');
+                form.reset();
+                await loadOrganizations();
+                
+                alert(`✅ Organization "${result.name}" registered successfully!`);
+            } catch (error) {
+                console.error('Error creating organization:', error);
+                alert(`❌ Error creating organization: ${error.message}`);
+            }
+        }
+
+        // Setup SDG Selector
+        function setupSDGSelector() {
+            const selector = document.getElementById('org-sdg-selector');
+            if (!selector) return;
+            
+            const sdgs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+            selector.innerHTML = sdgs.map(num => `
+                <label style="display: inline-flex; align-items: center; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox" value="${num}" style="margin-right: 5px;">
+                    SDG ${num}
+                </label>
+            `).join('');
+        }
+
+        // Show modal
+        function showCreateOrgModal() {
+            document.getElementById('create-org-modal').classList.add('show');
+            setupSDGSelector();
+        }
+
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🏢 Organizations Page Loaded');
+            console.log('API_BASE:', API_BASE);
+            
+            const token = localStorage.getItem('token');
+            if (token) {
+                console.log('User is logged in');
+            } else {
+                console.log('No auth token - allowing access anyway for testing');
+            }
+            
+            console.log('Loading organizations...');
+            await loadOrganizations();
+            console.log('Organizations loaded');
+            
+            const modal = document.getElementById('create-org-modal');
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal('create-org-modal');
+                });
+                console.log('Modal event listener attached');
+            } else {
+                console.error('Modal not found!');
+            }
+            
+            console.log('✅ Page initialization complete');
+        });
+    </script>
+</body>
+</html>

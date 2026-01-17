@@ -1,0 +1,10 @@
+# Ignore these files during Vercel deployment
+*.bat
+*.md
+.gitignore
+backend/sdg_platform.db
+backend/__pycache__/
+backend/.env
+.dist/
+*.pyc
+__pycache__/

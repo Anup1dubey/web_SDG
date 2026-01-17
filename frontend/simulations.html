@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulations - SDG Digital Twin Platform</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-left">
+            <div class="nav-brand">
+                <span class="brand-icon">🌍</span>
+                <span class="brand-text">SDG Digital Twin Platform</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="nav-icon-btn" onclick="showNotifications()">
+                <span class="icon">🔔</span>
+                <span class="badge">3</span>
+            </button>
+            <div class="user-menu" onclick="toggleUserMenu()">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span class="user-name" id="userName">User</span>
+                <span class="icon">▼</span>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="profile.html">
+                        <span class="icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="#" onclick="event.preventDefault(); logout();">
+                        <span class="icon">🚪</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <span class="menu-icon">📊</span>
+                    <span>Overview</span>
+                </a>
+                <a href="twins.html" class="menu-item">
+                    <span class="menu-icon">🏙️</span>
+                    <span>Digital Twins</span>
+                </a>
+                <a href="simulations.html" class="menu-item active">
+                    <span class="menu-icon">🔮</span>
+                    <span>Simulations</span>
+                </a>
+                <a href="projects.html" class="menu-item">
+                    <span class="menu-icon">📋</span>
+                    <span>Projects</span>
+                </a>
+                <a href="organizations.html" class="menu-item">
+                    <span class="menu-icon">🏢</span>
+                    <span>Organizations</span>
+                </a>
+                <a href="profile.html" class="menu-item">
+                    <span class="menu-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="section-header">
+                <h2>🔮 Future Impact Simulation Engine</h2>
+                <span class="innovation-badge">FLAGSHIP INNOVATION</span>
+            </div>
+
+            <div class="simulation-container">
+                <!-- Left Panel: Controls -->
+                <div class="simulation-controls">
+                    <div class="control-group">
+                        <label>Select Digital Twin</label>
+                        <select id="sim-twin-select" onchange="loadTwinForSimulation()">
+                            <option value="">Choose a digital twin...</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Select Project (Optional)</label>
+                        <select id="sim-project-select">
+                            <option value="">No project / Custom simulation</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Target SDGs</label>
+                        <div id="sdg-selector" class="sdg-selector"></div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Scenario Type</label>
+                        <div class="scenario-buttons">
+                            <button class="scenario-btn active" data-scenario="success">✅ Success</button>
+                            <button class="scenario-btn" data-scenario="partial_success">⚠️ Partial</button>
+                            <button class="scenario-btn" data-scenario="delay">⏱️ Delayed</button>
+                            <button class="scenario-btn" data-scenario="failure">❌ Failure</button>
+                            <button class="scenario-btn" data-scenario="underfunded">💰 Underfunded</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Funding Level: <span id="funding-value">100</span>%</label>
+                        <input type="range" id="funding-slider" min="0" max="100" value="100" step="5">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Timeline: <span id="timeline-value">5</span> years</label>
+                        <input type="range" id="timeline-slider" min="1" max="10" value="5" step="1">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Delay: <span id="delay-value">0</span> months</label>
+                        <input type="range" id="delay-slider" min="0" max="36" value="0" step="3">
+                    </div>
+
+                    <button class="btn btn-primary btn-large" onclick="runSimulation()">
+                        🚀 Run Simulation
+                    </button>
+
+                    <button class="btn btn-secondary" onclick="compareScenarios()">
+                        📊 Compare All Scenarios
+                    </button>
+                </div>
+
+                <!-- Right Panel: Results -->
+                <div class="simulation-results">
+                    <div id="simulation-output" class="simulation-output">
+                        <div class="placeholder">
+                            <div class="placeholder-icon">🎯</div>
+                            <h3>Ready to Predict the Future</h3>
+                            <p>Configure your simulation parameters and click "Run Simulation" to see what happens to your community's SDG indicators over time.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Inline helper functions
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) dropdown.classList.toggle('show');
+        }
+        
+        function showNotifications() {
+            alert('Notifications feature coming soon!');
+        }
+        
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+    </script>
+    <script>
+        // Simulations Page - Complete Working Version
+        const API_BASE = 'http://localhost:8000';
+        let digitalTwins = [];
+        let projects = [];
+        let selectedTwin = null;
+        let selectedScenario = 'success';
+
+        // Load Digital Twins
+        async function loadDigitalTwins() {
+            console.log('Loading digital twins for simulation...');
+            try {
+                const response = await fetch(`${API_BASE}/digital-twins`);
+                digitalTwins = await response.json();
+                console.log(`✅ Loaded ${digitalTwins.length} digital twins`);
+                updateTwinSelector();
+            } catch (error) {
+                console.error('Error loading digital twins:', error);
+            }
+        }
+
+        // Load Projects
+        async function loadProjects() {
+            console.log('Loading projects...');
+            try {
+                const response = await fetch(`${API_BASE}/projects`);
+                projects = await response.json();
+                console.log(`✅ Loaded ${projects.length} projects`);
+                updateProjectSelector();
+            } catch (error) {
+                console.error('Error loading projects:', error);
+            }
+        }
+
+        // Update Twin Selector
+        function updateTwinSelector() {
+            const select = document.getElementById('sim-twin-select');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">Choose a digital twin...</option>' + 
+                digitalTwins.map(t => `<option value="${t.id}">${t.name} (${t.region}, ${t.country})</option>`).join('');
+            
+            console.log(`Twin selector updated with ${digitalTwins.length} twins`);
+        }
+
+        // Update Project Selector
+        function updateProjectSelector() {
+            const select = document.getElementById('sim-project-select');
+            if (!select) return;
+            
+            select.innerHTML = '<option value="">No project / Custom simulation</option>' + 
+                projects.map(p => `<option value="${p.id}">${p.title}</option>`).join('');
+        }
+
+        // Load Twin for Simulation
+        function loadTwinForSimulation() {
+            const twinId = document.getElementById('sim-twin-select').value;
+            if (!twinId) {
+                selectedTwin = null;
+                return;
+            }
+            
+            selectedTwin = digitalTwins.find(t => t.id == twinId);
+            console.log('Selected twin:', selectedTwin);
+        }
+
+        // Setup SDG Selector
+        function setupSDGSelectors() {
+            const selector = document.getElementById('sdg-selector');
+            if (!selector) return;
+            
+            const sdgs = [
+                {id: 1, name: 'No Poverty'},
+                {id: 2, name: 'Zero Hunger'},
+                {id: 3, name: 'Good Health'},
+                {id: 4, name: 'Quality Education'},
+                {id: 5, name: 'Gender Equality'},
+                {id: 6, name: 'Clean Water'},
+                {id: 7, name: 'Clean Energy'},
+                {id: 8, name: 'Decent Work'},
+                {id: 9, name: 'Industry Innovation'},
+                {id: 10, name: 'Reduced Inequalities'},
+                {id: 11, name: 'Sustainable Cities'},
+                {id: 12, name: 'Responsible Consumption'},
+                {id: 13, name: 'Climate Action'},
+                {id: 14, name: 'Life Below Water'},
+                {id: 15, name: 'Life On Land'},
+                {id: 16, name: 'Peace Justice'},
+                {id: 17, name: 'Partnerships'}
+            ];
+            
+            selector.innerHTML = sdgs.map(sdg => `
+                <label class="sdg-checkbox">
+                    <input type="checkbox" value="${sdg.id}">
+                    <span>${sdg.id}. ${sdg.name}</span>
+                </label>
+            `).join('');
+        }
+
+        // Setup Sliders
+        function setupSliders() {
+            const fundingSlider = document.getElementById('funding-slider');
+            const timelineSlider = document.getElementById('timeline-slider');
+            const delaySlider = document.getElementById('delay-slider');
+            
+            if (fundingSlider) {
+                fundingSlider.addEventListener('input', (e) => {
+                    document.getElementById('funding-value').textContent = e.target.value;
+                });
+            }
+            
+            if (timelineSlider) {
+                timelineSlider.addEventListener('input', (e) => {
+                    document.getElementById('timeline-value').textContent = e.target.value;
+                });
+            }
+            
+            if (delaySlider) {
+                delaySlider.addEventListener('input', (e) => {
+                    document.getElementById('delay-value').textContent = e.target.value;
+                });
+            }
+        }
+
+        // Setup Scenario Buttons
+        function setupScenarioButtons() {
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    selectedScenario = btn.dataset.scenario;
+                    console.log('Selected scenario:', selectedScenario);
+                });
+            });
+        }
+
+        // Run Simulation
+        async function runSimulation() {
+            const output = document.getElementById('simulation-output');
+            
+            // Validate twin selection
+            if (!selectedTwin) {
+                alert('❌ Please select a digital twin first!');
+                return;
+            }
+            
+            // Get selected SDGs
+            const selectedSDGs = Array.from(document.querySelectorAll('#sdg-selector input:checked'))
+                .map(cb => parseInt(cb.value));
+            
+            if (selectedSDGs.length === 0) {
+                alert('❌ Please select at least one target SDG!');
+                return;
+            }
+            
+            // Get parameters
+            const funding = parseInt(document.getElementById('funding-slider').value);
+            const timeline = parseInt(document.getElementById('timeline-slider').value);
+            const delay = parseInt(document.getElementById('delay-slider').value);
+            
+            const params = {
+                digital_twin_id: selectedTwin.id,
+                target_sdgs: selectedSDGs,
+                scenario_type: selectedScenario,
+                funding_percentage: funding,
+                timeline_years: timeline,
+                delay_months: delay
+            };
+            
+            console.log('Running advanced simulation with params:', params);
+            output.innerHTML = '<div class="placeholder"><div class="placeholder-icon">⏳</div><h3>Running Advanced Simulation...</h3><p>Calculating interdependencies, feedback loops, and time-delayed effects...</p></div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/simulation/run`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(params)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ Advanced simulation result:', result);
+                displayAdvancedSimulationResults(result);
+                
+            } catch (error) {
+                console.error('Error running simulation:', error);
+                output.innerHTML = `<div class="placeholder"><div class="placeholder-icon">❌</div><h3>Simulation Failed</h3><p>${error.message}</p></div>`;
+            }
+        }
+
+        // Display Advanced Simulation Results
+        function displayAdvancedSimulationResults(result) {
+            const output = document.getElementById('simulation-output');
+            
+            // Display narrative summary
+            const narrativeHtml = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 10px 0;">📖 Simulation Narrative</h3>
+                    <p style="margin: 0; line-height: 1.6;">${result.narrative}</p>
+                </div>
+            `;
+            
+            // Display top changes
+            const topChangesHtml = result.top_changes.map(change => {
+                const changeVal = change.pct_change;
+                const color = changeVal > 0 ? '#10b981' : '#ef4444';
+                const arrow = changeVal > 0 ? '↑' : '↓';
+                return `
+                    <div style="padding: 12px; background: #f9fafb; border-radius: 8px; margin: 8px 0;">
+                        <strong>${change.indicator}:</strong>
+                        <span style="color: ${color}; font-weight: 600; margin-left: 8px;">
+                            ${arrow} ${Math.abs(changeVal).toFixed(1)}%
+                        </span>
+                        <span style="color: #64748b; margin-left: 8px; font-size: 13px;">
+                            (${change.baseline.toFixed(1)} → ${change.final.toFixed(1)})
+                        </span>
+                    </div>
+                `;
+            }).join('');
+            
+            // Display bottlenecks
+            const bottlenecksHtml = result.bottlenecks.length > 0 ? `
+                <h4 style="margin-top: 20px; color: #475569;">⚠️ Bottlenecks Identified:</h4>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    ${result.bottlenecks.map(b => `<li style="margin: 5px 0;"><strong>${b.indicator}:</strong> ${b.reason}</li>`).join('')}
+                </ul>
+            ` : '';
+            
+            output.innerHTML = `
+                <div style="padding: 20px;">
+                    <h3 style="color: #1e293b; margin-bottom: 16px;">🎯 Advanced Simulation Results</h3>
+                    
+                    <div style="background: #eff6ff; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+                        <strong>Digital Twin:</strong> ${result.digital_twin_name}<br>
+                        <strong>Scenario:</strong> ${result.scenario_type.replace('_', ' ').toUpperCase()}<br>
+                        <strong>Timeline:</strong> ${result.timeline_years} years<br>
+                        <strong>Net SDG Progress:</strong> <span style="color: ${result.net_sdg_progress > 0 ? '#10b981' : '#ef4444'}; font-weight: 600;">${result.net_sdg_progress > 0 ? '+' : ''}${result.net_sdg_progress.toFixed(1)}%</span><br>
+                        <strong>Confidence:</strong> ${(result.confidence_score * 100).toFixed(0)}%<br>
+                        <strong>Implementation Effectiveness:</strong> ${(result.effectiveness * 100).toFixed(0)}%
+                    </div>
+                    
+                    ${narrativeHtml}
+                    
+                    <h4 style="margin-top: 20px; color: #475569;">📊 Top Indicator Changes:</h4>
+                    ${topChangesHtml}
+                    
+                    ${bottlenecksHtml}
+                    
+                    <h4 style="margin-top: 20px; color: #475569;">⚠️ Risk Factors:</h4>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        ${result.risk_factors.map(risk => `<li style="margin: 5px 0;">${risk}</li>`).join('')}
+                    </ul>
+                    
+                    <h4 style="margin-top: 20px; color: #475569;">💡 Recommendations:</h4>
+                    <ul style="margin: 10px 0; padding-left: 20px;">
+                        ${result.recommendations.map(rec => `<li style="margin: 5px 0;">${rec}</li>`).join('')}
+                    </ul>
+                    
+                    <p style="margin-top: 20px; font-size: 12px; color: #64748b;">
+                        Simulation ID: ${result.simulation_id} | Generated: ${new Date(result.created_at).toLocaleString()}
+                    </p>
+                    
+                    <div style="margin-top: 20px; padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                        <strong>🔬 Advanced Features Used:</strong><br>
+                        <span style="font-size: 13px;">
+                            ✓ SDG Interdependencies | ✓ Time-Delayed Effects | ✓ Diminishing Returns | 
+                            ✓ Feedback Loops | ✓ Constraint Modeling | ✓ Year-by-Year Simulation
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Compare Scenarios (placeholder)
+        function compareScenarios() {
+            if (!selectedTwin) {
+                alert('❌ Please select a digital twin first!');
+                return;
+            }
+            alert('🔜 Scenario comparison feature coming soon! This will show side-by-side predictions for all scenario types.');
+        }
+
+        // Initialize Page
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🔮 Simulations Page Loaded');
+            
+            const token = localStorage.getItem('token');
+            if (token) {
+                console.log('User is logged in');
+            }
+            
+            // Load data
+            await Promise.all([
+                loadDigitalTwins(),
+                loadProjects()
+            ]);
+            
+            // Setup UI
+            setupSDGSelectors();
+            setupSliders();
+            setupScenarioButtons();
+            
+            console.log('✅ Simulations page ready');
+        });
+    </script>
+</body>
+</html>

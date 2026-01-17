@@ -1,0 +1,8 @@
+# Minimal requirements for Python 3.13 compatibility
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+email-validator
+python-dotenv
+python-multipart

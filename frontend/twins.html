@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Twins - SDG Digital Twin Platform</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-left">
+            <div class="nav-brand">
+                <span class="brand-icon">🌍</span>
+                <span class="brand-text">SDG Digital Twin Platform</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="nav-icon-btn" onclick="showNotifications()">
+                <span class="icon">🔔</span>
+                <span class="badge">3</span>
+            </button>
+            <div class="user-menu" onclick="toggleUserMenu()">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span class="user-name" id="userName">User</span>
+                <span class="icon">▼</span>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="profile.html">
+                        <span class="icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="#" onclick="event.preventDefault(); logout();">
+                        <span class="icon">🚪</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <span class="menu-icon">📊</span>
+                    <span>Overview</span>
+                </a>
+                <a href="twins.html" class="menu-item active">
+                    <span class="menu-icon">🏙️</span>
+                    <span>Digital Twins</span>
+                </a>
+                <a href="simulations.html" class="menu-item">
+                    <span class="menu-icon">🔮</span>
+                    <span>Simulations</span>
+                </a>
+                <a href="projects.html" class="menu-item">
+                    <span class="menu-icon">📋</span>
+                    <span>Projects</span>
+                </a>
+                <a href="organizations.html" class="menu-item">
+                    <span class="menu-icon">🏢</span>
+                    <span>Organizations</span>
+                </a>
+                <a href="profile.html" class="menu-item">
+                    <span class="menu-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="section-header">
+                <h2>🏙️ Digital Twin Management</h2>
+                <button class="btn btn-primary" onclick="showCreateTwinModal()">+ Create Digital Twin</button>
+            </div>
+            <div id="twins-grid" class="twins-grid"></div>
+        </main>
+    </div>
+
+    <!-- Create Digital Twin Modal -->
+    <div id="create-twin-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Digital Twin</h3>
+                <button class="modal-close" onclick="closeModal('create-twin-modal')">&times;</button>
+            </div>
+            <form id="create-twin-form" onsubmit="createDigitalTwin(event)">
+                <div class="form-group">
+                    <label>Twin Name *</label>
+                    <input type="text" name="name" required placeholder="e.g., Greater Mumbai Digital Twin">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Region/City *</label>
+                        <input type="text" name="region" required placeholder="e.g., Mumbai">
+                    </div>
+                    <div class="form-group">
+                        <label>Country *</label>
+                        <input type="text" name="country" required placeholder="e.g., India">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Population *</label>
+                        <input type="number" name="population" required placeholder="e.g., 12500000">
+                    </div>
+                    <div class="form-group">
+                        <label>Area (km²) *</label>
+                        <input type="number" step="0.01" name="area_km2" required placeholder="e.g., 603.4">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Region Type</label>
+                    <select name="region_type">
+                        <option value="developing_urban">Developing Urban</option>
+                        <option value="developed_urban">Developed Urban</option>
+                        <option value="rural">Rural</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3" placeholder="Describe this region/community..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Digital Twin</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Inline auth functions to avoid dependency issues
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) dropdown.classList.toggle('show');
+        }
+        
+        function showNotifications() {
+            alert('Notifications feature coming soon!');
+        }
+        
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+    </script>
+    <script>
+        // Twins Page - Simplified Working Version
+        const API_BASE = 'http://localhost:8000';
+        let digitalTwins = [];
+        let allSDGs = { goals: {} };
+
+        // Load Digital Twins
+        async function loadDigitalTwins() {
+            console.log('Loading digital twins...');
+            try {
+                const response = await fetch(`${API_BASE}/digital-twins`);
+                digitalTwins = await response.json();
+                console.log(`✅ Loaded ${digitalTwins.length} digital twins`);
+                renderDigitalTwins();
+            } catch (error) {
+                console.error('Error loading digital twins:', error);
+                document.getElementById('twins-grid').innerHTML = '<p style="color: #ef4444;">Error loading twins. Check console.</p>';
+            }
+        }
+
+        // Render Digital Twins
+        function renderDigitalTwins() {
+            const grid = document.getElementById('twins-grid');
+            
+            if (digitalTwins.length === 0) {
+                grid.innerHTML = '<p style="color: #64748b; padding: 20px;">No digital twins yet. Create your first one!</p>';
+                return;
+            }
+            
+            grid.innerHTML = digitalTwins.map(twin => `
+                <div class="twin-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; transition: all 0.2s; position: relative;">
+                    <button onclick="deleteTwin(${twin.id}, '${twin.name.replace(/'/g, "\\'")}')" 
+                            style="position: absolute; top: 15px; right: 15px; background: #ef4444; color: white; border: none; border-radius: 6px; padding: 8px 12px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;"
+                            onmouseover="this.style.background='#dc2626'" 
+                            onmouseout="this.style.background='#ef4444'"
+                            title="Delete this digital twin">
+                        🗑️ Delete
+                    </button>
+                    <h3 style="margin: 0 0 10px 0; font-size: 18px; color: #1e293b; padding-right: 90px;">${twin.name}</h3>
+                    <p style="color: #64748b; font-size: 14px; margin: 8px 0;">
+                        📍 ${twin.region}, ${twin.country}
+                    </p>
+                    <p style="font-size: 13px; color: #475569; margin: 12px 0;">
+                        ${twin.description || 'Digital twin ready for simulation'}
+                    </p>
+                    <div style="display: flex; gap: 16px; margin-top: 12px; font-size: 13px; color: #64748b; flex-wrap: wrap;">
+                        <span>👥 ${twin.population.toLocaleString()}</span>
+                        <span>📍 ${twin.area_km2} km²</span>
+                        <span>📅 ${twin.baseline_year || 'N/A'}</span>
+                        <span style="color: #3b82f6;">ID: ${twin.id}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Delete Digital Twin
+        async function deleteTwin(twinId, twinName) {
+            if (!confirm(`⚠️ Are you sure you want to delete "${twinName}"?\n\nThis will also delete all associated simulations and projects.\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            console.log(`Deleting twin ID: ${twinId}`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/digital-twins/${twinId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${error}`);
+                }
+                
+                console.log('✅ Twin deleted successfully');
+                
+                // Reload the list
+                await loadDigitalTwins();
+                
+                alert(`✅ "${twinName}" has been deleted successfully!`);
+            } catch (error) {
+                console.error('Error deleting twin:', error);
+                alert(`❌ Error deleting twin: ${error.message}`);
+            }
+        }
+
+        // Create Digital Twin
+        async function createDigitalTwin(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            const data = {
+                name: formData.get('name'),
+                region: formData.get('region'),
+                country: formData.get('country'),
+                population: parseInt(formData.get('population')),
+                area_km2: parseFloat(formData.get('area_km2')),
+                description: formData.get('description') || '',
+                region_type: formData.get('region_type')
+            };
+            
+            console.log('Creating Digital Twin:', data);
+            
+            try {
+                const response = await fetch(`${API_BASE}/digital-twins`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${error}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ Created Digital Twin:', result);
+                
+                // Close modal and reset form
+                closeModal('create-twin-modal');
+                form.reset();
+                
+                // Reload twins to show the new one
+                await loadDigitalTwins();
+                
+                alert(`✅ Digital Twin "${result.name}" created successfully!`);
+            } catch (error) {
+                console.error('Error creating digital twin:', error);
+                alert(`❌ Error creating digital twin: ${error.message}`);
+            }
+        }
+
+        // Show modal
+        function showCreateTwinModal() {
+            document.getElementById('create-twin-modal').classList.add('show');
+        }
+
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('🏙️ Digital Twins Page Loaded');
+            console.log('API_BASE:', API_BASE);
+            
+            // Update user info if logged in
+            const token = localStorage.getItem('token');
+            if (token) {
+                console.log('User is logged in');
+            } else {
+                console.log('No auth token - allowing access anyway for testing');
+            }
+            
+            // Load twins
+            console.log('Starting to load twins...');
+            await loadDigitalTwins();
+            console.log('Twins loaded successfully');
+            
+            // Setup modal close on background click
+            const modal = document.getElementById('create-twin-modal');
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal('create-twin-modal');
+                    }
+                });
+                console.log('Modal event listener attached');
+            } else {
+                console.error('Modal not found!');
+            }
+            
+            console.log('✅ Page initialization complete');
+        });
+    </script>
+</body>
+</html>

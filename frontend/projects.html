@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - SDG Digital Twin Platform</title>
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-left">
+            <div class="nav-brand">
+                <span class="brand-icon">🌍</span>
+                <span class="brand-text">SDG Digital Twin Platform</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="nav-icon-btn" onclick="showNotifications()">
+                <span class="icon">🔔</span>
+                <span class="badge">3</span>
+            </button>
+            <div class="user-menu" onclick="toggleUserMenu()">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span class="user-name" id="userName">User</span>
+                <span class="icon">▼</span>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="profile.html">
+                        <span class="icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="#" onclick="event.preventDefault(); logout();">
+                        <span class="icon">🚪</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item">
+                    <span class="menu-icon">📊</span>
+                    <span>Overview</span>
+                </a>
+                <a href="twins.html" class="menu-item">
+                    <span class="menu-icon">🏙️</span>
+                    <span>Digital Twins</span>
+                </a>
+                <a href="simulations.html" class="menu-item">
+                    <span class="menu-icon">🔮</span>
+                    <span>Simulations</span>
+                </a>
+                <a href="projects.html" class="menu-item active">
+                    <span class="menu-icon">📋</span>
+                    <span>Projects</span>
+                </a>
+                <a href="organizations.html" class="menu-item">
+                    <span class="menu-icon">🏢</span>
+                    <span>Organizations</span>
+                </a>
+                <a href="profile.html" class="menu-item">
+                    <span class="menu-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="section-header">
+                <h2>📋 SDG Projects</h2>
+                <button class="btn btn-primary" onclick="showCreateProjectModal()">+ New Project</button>
+            </div>
+            <div id="projects-grid" class="projects-grid"></div>
+        </main>
+    </div>
+
+    <!-- Create Project Modal -->
+    <div id="create-project-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Project</h3>
+                <button class="modal-close" onclick="closeModal('create-project-modal')">&times;</button>
+            </div>
+            <form id="create-project-form" onsubmit="createProject(event)">
+                <div class="form-group">
+                    <label>Project Title *</label>
+                    <input type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Organization *</label>
+                    <select name="organization_id" id="project-org-select" required>
+                        <option value="">Select organization...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Link to Digital Twin</label>
+                    <select name="digital_twin_id" id="project-twin-select">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea name="description" rows="3" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Budget (USD) *</label>
+                        <input type="number" name="budget" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Timeline (months) *</label>
+                        <input type="number" name="timeline_months" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Target SDGs *</label>
+                    <div id="project-sdg-selector" class="sdg-selector-compact"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Project</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Inline helper functions
+        function toggleUserMenu() {
+            const dropdown = document.getElementById('userDropdown');
+            if (dropdown) dropdown.classList.toggle('show');
+        }
+        
+        function showNotifications() {
+            alert('Notifications feature coming soon!');
+        }
+        
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+    </script>
+    <script>
+        // Projects Page - Simplified Working Version
+        const API_BASE = 'http://localhost:8000';
+        let projects = [];
+        let organizations = [];
+        let digitalTwins = [];
+
+        // Load Projects
+        async function loadProjects() {
+            console.log('Loading projects...');
+            try {
+                const response = await fetch(`${API_BASE}/projects`);
+                projects = await response.json();
+                console.log(`✅ Loaded ${projects.length} projects`);
+                renderProjects();
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                document.getElementById('projects-grid').innerHTML = '<p style="color: #ef4444;">Error loading projects. Check console.</p>';
+            }
+        }
+
+        // Load Organizations for dropdown
+        async function loadOrganizations() {
+            try {
+                const response = await fetch(`${API_BASE}/organizations`);
+                organizations = await response.json();
+                updateOrgSelector();
+            } catch (error) {
+                console.error('Error loading organizations:', error);
+            }
+        }
+
+        // Load Digital Twins for dropdown
+        async function loadDigitalTwins() {
+            try {
+                const response = await fetch(`${API_BASE}/digital-twins`);
+                digitalTwins = await response.json();
+                updateTwinSelector();
+            } catch (error) {
+                console.error('Error loading digital twins:', error);
+            }
+        }
+
+        // Update organization selector
+        function updateOrgSelector() {
+            const select = document.getElementById('project-org-select');
+            if (select) {
+                select.innerHTML = '<option value="">Select organization...</option>' + 
+                    organizations.map(org => `<option value="${org.id}">${org.name}</option>`).join('');
+            }
+        }
+
+        // Update twin selector
+        function updateTwinSelector() {
+            const select = document.getElementById('project-twin-select');
+            if (select) {
+                select.innerHTML = '<option value="">None</option>' + 
+                    digitalTwins.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+            }
+        }
+
+        // Render Projects
+        function renderProjects() {
+            const grid = document.getElementById('projects-grid');
+            
+            if (projects.length === 0) {
+                grid.innerHTML = '<p style="color: #64748b; padding: 20px;">No projects yet. Create your first one!</p>';
+                return;
+            }
+            
+            grid.innerHTML = projects.map(project => `
+                <div class="project-card" style="background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; transition: all 0.2s; position: relative;">
+                    <button onclick="deleteProject(${project.id}, '${project.title.replace(/'/g, "\\'")}')" 
+                            style="position: absolute; top: 15px; right: 15px; background: #ef4444; color: white; border: none; border-radius: 6px; padding: 8px 12px; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s;"
+                            onmouseover="this.style.background='#dc2626'" 
+                            onmouseout="this.style.background='#ef4444'"
+                            title="Delete this project">
+                        🗑️ Delete
+                    </button>
+                    <h3 style="margin: 0 0 10px 0; font-size: 18px; color: #1e293b; padding-right: 90px;">${project.title}</h3>
+                    <p style="font-size: 13px; color: #475569; margin: 8px 0;">
+                        ${project.description}
+                    </p>
+                    <div style="display: flex; gap: 16px; margin: 12px 0; font-size: 13px; color: #64748b; flex-wrap: wrap;">
+                        <span>💰 $${project.budget.toLocaleString()}</span>
+                        <span>📅 ${project.timeline_months} months</span>
+                        <span>📊 ${project.status}</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                        ${project.target_sdgs.map(sdg => `<span style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">SDG ${sdg}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Delete Project
+        async function deleteProject(projectId, projectTitle) {
+            if (!confirm(`⚠️ Are you sure you want to delete "${projectTitle}"?\n\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            console.log(`Deleting project ID: ${projectId}`);
+            
+            try {
+                const response = await fetch(`${API_BASE}/projects/${projectId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${error}`);
+                }
+                
+                console.log('✅ Project deleted successfully');
+                
+                // Reload the list
+                await loadProjects();
+                
+                alert(`✅ "${projectTitle}" has been deleted successfully!`);
+            } catch (error) {
+                console.error('Error deleting project:', error);
+                alert(`❌ Error deleting project: ${error.message}`);
+            }
+        }
+
+        // Create Project
+        async function createProject(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            // Get selected SDGs from checkboxes
+            const selectedSDGs = Array.from(document.querySelectorAll('#project-sdg-selector input:checked'))
+                .map(cb => parseInt(cb.value));
+            
+            if (selectedSDGs.length === 0) {
+                alert('Please select at least one target SDG');
+                return;
+            }
+            
+            const data = {
+                title: formData.get('title'),
+                organization_id: parseInt(formData.get('organization_id')),
+                digital_twin_id: formData.get('digital_twin_id') ? parseInt(formData.get('digital_twin_id')) : null,
+                description: formData.get('description'),
+                budget: parseFloat(formData.get('budget')),
+                timeline_months: parseInt(formData.get('timeline_months')),
+                target_sdgs: selectedSDGs
+            };
+            
+            console.log('Creating Project:', data);
+            
+            try {
+                const response = await fetch(`${API_BASE}/projects`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    const error = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${error}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ Created Project:', result);
+                
+                closeModal('create-project-modal');
+                form.reset();
+                await loadProjects();
+                
+                alert(`✅ Project "${result.title}" created successfully!`);
+            } catch (error) {
+                console.error('Error creating project:', error);
+                alert(`❌ Error creating project: ${error.message}`);
+            }
+        }
+
+        // Setup SDG Selector
+        function setupSDGSelector() {
+            const selector = document.getElementById('project-sdg-selector');
+            if (!selector) return;
+            
+            const sdgs = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17];
+            selector.innerHTML = sdgs.map(num => `
+                <label style="display: inline-flex; align-items: center; padding: 6px 10px; border: 1px solid #e5e7eb; border-radius: 6px; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox" value="${num}" style="margin-right: 5px;">
+                    SDG ${num}
+                </label>
+            `).join('');
+        }
+
+        // Show modal
+        function showCreateProjectModal() {
+            document.getElementById('create-project-modal').classList.add('show');
+            setupSDGSelector();
+        }
+
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log('📋 Projects Page Loaded');
+            console.log('API_BASE:', API_BASE);
+            
+            const token = localStorage.getItem('token');
+            if (token) {
+                console.log('User is logged in');
+            } else {
+                console.log('No auth token - allowing access anyway for testing');
+            }
+            
+            console.log('Loading data...');
+            await Promise.all([
+                loadProjects(),
+                loadOrganizations(),
+                loadDigitalTwins()
+            ]);
+            console.log('All data loaded');
+            
+            const modal = document.getElementById('create-project-modal');
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal('create-project-modal');
+                });
+                console.log('Modal event listener attached');
+            } else {
+                console.error('Modal not found!');
+            }
+            
+            console.log('✅ Page initialization complete');
+        });
+    </script>
+</body>
+</html>

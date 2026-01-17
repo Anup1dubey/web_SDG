@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - SDG Digital Twin Platform</title>
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Left Side - Branding -->
+        <div class="auth-brand">
+            <div class="brand-content">
+                <a href="landing.html" class="back-link">← Back to Home</a>
+                <div class="brand-logo">
+                    <span class="logo-icon">🌍</span>
+                    <span class="logo-text">SDG Twin</span>
+                </div>
+                <h1>Join the Future of Sustainable Development</h1>
+                <p>Create your account and start predicting SDG impact in minutes.</p>
+                
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <span class="feature-icon">✓</span>
+                        <span>Digital Twin Creation</span>
+                    </div>
+                    <div class="auth-feature">
+                        <span class="feature-icon">✓</span>
+                        <span>Future Impact Simulation</span>
+                    </div>
+                    <div class="auth-feature">
+                        <span class="feature-icon">✓</span>
+                        <span>AI-Powered Insights</span>
+                    </div>
+                    <div class="auth-feature">
+                        <span class="feature-icon">✓</span>
+                        <span>Scenario Comparison</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Form -->
+        <div class="auth-form-container">
+            <div class="auth-form-content">
+                <h2>Create Your Account</h2>
+                <p class="form-subtitle">Start making smarter sustainability decisions</p>
+
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="fullName">Full Name *</label>
+                        <input type="text" id="fullName" name="fullName" required placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required placeholder="john@organization.org">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password *</label>
+                        <input type="password" id="password" name="password" required placeholder="Min. 8 characters">
+                        <div class="password-strength" id="passwordStrength"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password *</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="Re-enter password">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="orgType">Organization Type *</label>
+                        <select id="orgType" name="orgType" required>
+                            <option value="">Select your organization type</option>
+                            <option value="Startup">Startup / Tech Company</option>
+                            <option value="NGO">NGO / Non-Profit</option>
+                            <option value="Government">Government Agency</option>
+                            <option value="Researcher">Researcher / Academic</option>
+                            <option value="Private">Private Sector / Corporate</option>
+                            <option value="International">International Organization</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>SDG Interests (Select all that apply)</label>
+                        <div class="sdg-chips" id="sdgChips">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="terms" required>
+                            <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
+                        </label>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="newsletter">
+                            <span>Send me product updates and sustainability insights</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <span id="btnText">Create Account</span>
+                        <span id="btnLoader" class="loader" style="display: none;"></span>
+                    </button>
+
+                    <div id="errorMessage" class="error-message" style="display: none;"></div>
+                    <div id="successMessage" class="success-message" style="display: none;"></div>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Already have an account? <a href="login.html">Sign In</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        // Initialize SDG chips
+        const sdgNames = {
+            1: "No Poverty", 2: "Zero Hunger", 3: "Good Health", 4: "Quality Education",
+            5: "Gender Equality", 6: "Clean Water", 7: "Clean Energy", 8: "Decent Work",
+            9: "Innovation", 10: "Reduced Inequalities", 11: "Sustainable Cities", 12: "Responsible Consumption",
+            13: "Climate Action", 14: "Life Below Water", 15: "Life on Land", 16: "Peace & Justice",
+            17: "Partnerships"
+        };
+
+        const sdgChipsContainer = document.getElementById('sdgChips');
+        for (let i = 1; i <= 17; i++) {
+            const chip = document.createElement('div');
+            chip.className = 'sdg-chip';
+            chip.dataset.sdg = i;
+            chip.innerHTML = `<span class="chip-number">${i}</span><span class="chip-name">${sdgNames[i]}</span>`;
+            chip.onclick = () => chip.classList.toggle('selected');
+            sdgChipsContainer.appendChild(chip);
+        }
+
+        // Handle registration
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const orgType = document.getElementById('orgType').value;
+            
+            // Get selected SDGs
+            const selectedSDGs = Array.from(document.querySelectorAll('.sdg-chip.selected'))
+                .map(chip => parseInt(chip.dataset.sdg));
+            
+            // Validation
+            if (password !== confirmPassword) {
+                showError('Passwords do not match');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters');
+                return;
+            }
+            
+            if (selectedSDGs.length === 0) {
+                showError('Please select at least one SDG interest');
+                return;
+            }
+            
+            // Show loading
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoader.style.display = 'inline-block';
+            
+            try {
+                const response = await fetch('http://localhost:8000/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password,
+                        full_name: fullName,
+                        organization_type: orgType,
+                        sdg_interests: selectedSDGs
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Account created successfully! Redirecting to login...');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else {
+                    showError(data.detail || 'Registration failed. Please try again.');
+                    submitBtn.disabled = false;
+                    btnText.style.display = 'inline';
+                    btnLoader.style.display = 'none';
+                }
+            } catch (error) {
+                showError('Network error. Please check if the backend server is running.');
+                submitBtn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoader.style.display = 'none';
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+        }
+
+        // Password strength indicator
+        document.getElementById('password').addEventListener('input', (e) => {
+            const password = e.target.value;
+            const strengthDiv = document.getElementById('passwordStrength');
+            
+            if (password.length === 0) {
+                strengthDiv.innerHTML = '';
+                return;
+            }
+            
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (password.length >= 12) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/[0-9]/.test(password)) strength++;
+            if (/[^A-Za-z0-9]/.test(password)) strength++;
+            
+            const labels = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+            const colors = ['#ef4444', '#f59e0b', '#eab308', '#22c55e', '#10b981'];
+            
+            strengthDiv.innerHTML = `<span style="color: ${colors[strength - 1]}">${labels[strength - 1]}</span>`;
+        });
+    </script>
+</body>
+</html>

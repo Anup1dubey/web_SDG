@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - SDG Digital Twin Platform</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-left">
+            <div class="nav-brand">
+                <span class="brand-icon">🌍</span>
+                <span class="brand-text">SDG Digital Twin Platform</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="nav-icon-btn" onclick="showNotifications()">
+                <span class="icon">🔔</span>
+                <span class="badge">3</span>
+            </button>
+            <div class="user-menu" onclick="toggleUserMenu()">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span class="user-name" id="userName">User</span>
+                <span class="icon">▼</span>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="profile.html">
+                        <span class="icon">👤</span>
+                        <span>Profile</span>
+                    </a>
+                    <a href="#" onclick="event.preventDefault(); logout();">
+                        <span class="icon">🚪</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-menu">
+                <a href="dashboard.html" class="menu-item active">
+                    <span class="menu-icon">📊</span>
+                    <span>Overview</span>
+                </a>
+                <a href="twins.html" class="menu-item">
+                    <span class="menu-icon">🏙️</span>
+                    <span>Digital Twins</span>
+                </a>
+                <a href="simulations.html" class="menu-item">
+                    <span class="menu-icon">🔮</span>
+                    <span>Simulations</span>
+                </a>
+                <a href="projects.html" class="menu-item">
+                    <span class="menu-icon">📋</span>
+                    <span>Projects</span>
+                </a>
+                <a href="organizations.html" class="menu-item">
+                    <span class="menu-icon">🏢</span>
+                    <span>Organizations</span>
+                </a>
+                <a href="profile.html" class="menu-item">
+                    <span class="menu-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <div class="welcome-content">
+                    <h1>Welcome back, <span id="userNameDisplay">User</span>! 👋</h1>
+                    <p>Ready to predict the future of sustainable development?</p>
+                </div>
+                <div class="quick-actions">
+                    <button class="action-btn primary" onclick="window.location.href='simulations.html'">
+                        <span class="btn-icon">🚀</span>
+                        <span>Run Simulation</span>
+                    </button>
+                    <button class="action-btn secondary" onclick="window.location.href='twins.html'">
+                        <span class="btn-icon">🏙️</span>
+                        <span>Create Twin</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">🏙️</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="twinCount">-</div>
+                        <div class="stat-label">Digital Twins</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">🔮</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="simCount">-</div>
+                        <div class="stat-label">Simulations Run</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">📋</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="projectCount">-</div>
+                        <div class="stat-label">Active Projects</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">👥</div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="impactCount">-</div>
+                        <div class="stat-label">People Impacted</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Profile Card -->
+            <div class="profile-card">
+                <div class="card-header">
+                    <h3>Your Profile</h3>
+                    <a href="profile.html" class="edit-link">Edit →</a>
+                </div>
+                <div class="profile-info">
+                    <div class="info-item">
+                        <span class="info-label">Organization Type</span>
+                        <span class="info-value" id="userOrgType">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email</span>
+                        <span class="info-value" id="userEmail">-</span>
+                    </div>
+                    <div class="info-item full-width">
+                        <span class="info-label">SDG Interests</span>
+                        <div class="sdg-badges" id="userSDGBadges"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

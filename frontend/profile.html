@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - SDG Digital Twin Platform</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="profile.css">
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="dashboard-nav">
+        <div class="nav-left">
+            <div class="nav-brand">
+                <span class="brand-icon">🌍</span>
+                <span class="brand-text">SDG Twin</span>
+            </div>
+        </div>
+        <div class="nav-right">
+            <button class="nav-icon-btn" onclick="window.location.href='dashboard.html'">
+                <span class="icon">←</span>
+            </button>
+            <div class="user-menu" onclick="toggleUserMenu()">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <span class="user-name" id="userName">User</span>
+                <span class="icon">▼</span>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="dashboard.html">
+                        <span class="icon">📊</span>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" onclick="event.preventDefault(); logout();">
+                        <span class="icon">🚪</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="profile-container">
+        <div class="profile-sidebar">
+            <div class="profile-header">
+                <div class="profile-avatar-large" id="profileAvatar">U</div>
+                <h2 id="profileName">User Name</h2>
+                <p id="profileEmail">email@example.com</p>
+            </div>
+            <nav class="profile-nav">
+                <a href="#profile" class="profile-nav-item active">
+                    <span class="icon">👤</span>
+                    <span>Profile Information</span>
+                </a>
+                <a href="#sdgs" class="profile-nav-item">
+                    <span class="icon">🌍</span>
+                    <span>SDG Interests</span>
+                </a>
+                <a href="#preferences" class="profile-nav-item">
+                    <span class="icon">⚙️</span>
+                    <span>Preferences</span>
+                </a>
+                <a href="#security" class="profile-nav-item">
+                    <span class="icon">🔒</span>
+                    <span>Security</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="profile-content">
+            <!-- Profile Information -->
+            <section id="profile" class="profile-section">
+                <h2>Profile Information</h2>
+                <p class="section-description">Update your personal information and organization details.</p>
+                
+                <form id="profileForm" class="profile-form">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" placeholder="John Doe">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" name="email" disabled>
+                        <p class="field-hint">Email cannot be changed</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="orgType">Organization Type</label>
+                        <input type="text" id="orgType" name="orgType" disabled>
+                        <p class="field-hint">Contact support to change organization type</p>
+                    </div>
+                    
+                    <button type="submit" class="btn-save">Save Changes</button>
+                </form>
+            </section>
+
+            <!-- SDG Interests -->
+            <section id="sdgs" class="profile-section">
+                <h2>SDG Interests</h2>
+                <p class="section-description">Select the Sustainable Development Goals you're most interested in.</p>
+                
+                <div class="sdg-grid" id="sdgGrid">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                
+                <button class="btn-save" onclick="saveSDGInterests()">Save SDG Interests</button>
+            </section>
+
+            <!-- Preferences -->
+            <section id="preferences" class="profile-section">
+                <h2>Notification Preferences</h2>
+                <p class="section-description">Manage how you receive updates and notifications.</p>
+                
+                <div class="preferences-list">
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <h3>Email Notifications</h3>
+                            <p>Receive email updates about simulations and projects</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="emailNotifications">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="preference-item">
+                        <div class="preference-info">
+                            <h3>All Notifications</h3>
+                            <p>Enable or disable all platform notifications</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="allNotifications">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <button class="btn-save" onclick="savePreferences()">Save Preferences</button>
+            </section>
+
+            <!-- Security -->
+            <section id="security" class="profile-section">
+                <h2>Security Settings</h2>
+                <p class="section-description">Manage your password and account security.</p>
+                
+                <form id="passwordForm" class="profile-form">
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" name="currentPassword" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-save">Change Password</button>
+                </form>
+
+                <div class="danger-zone">
+                    <h3>Danger Zone</h3>
+                    <p>Permanently delete your account and all associated data.</p>
+                    <button class="btn-danger" onclick="confirmDeleteAccount()">Delete Account</button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div id="successToast" class="toast success-toast">
+        <span class="toast-icon">✓</span>
+        <span class="toast-message">Changes saved successfully!</span>
+    </div>
+
+    <div id="errorToast" class="toast error-toast">
+        <span class="toast-icon">✗</span>
+        <span class="toast-message">Error saving changes</span>
+    </div>
+
+    <script src="auth.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html>

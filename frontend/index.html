@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDG Digital Twin & Future Impact Simulation Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>🌍 SDG Digital Twin Platform</h1>
+                <p class="tagline">Predict the Future. Shape the Impact.</p>
+            </div>
+            <nav class="nav">
+                <button class="nav-btn active" data-section="twins">Digital Twins</button>
+                <button class="nav-btn" data-section="simulate">Future Simulation</button>
+                <button class="nav-btn" data-section="projects">Projects</button>
+                <button class="nav-btn" data-section="orgs">Organizations</button>
+                <div class="nav-user" id="navUser" style="display: none;">
+                    <button class="nav-btn" onclick="window.location.href='dashboard.html'">Dashboard</button>
+                    <button class="nav-btn" onclick="window.location.href='profile.html'">Profile</button>
+                    <button class="nav-btn" onclick="logout()">Logout</button>
+                </div>
+                <div class="nav-auth" id="navAuth">
+                    <button class="nav-btn" onclick="window.location.href='login.html'">Login</button>
+                    <button class="nav-btn nav-btn-primary" onclick="window.location.href='register.html'">Sign Up</button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Digital Twins Section -->
+        <section id="twins-section" class="section active">
+            <div class="section-header">
+                <h2>Digital Twin Management</h2>
+                <button class="btn btn-primary" onclick="showCreateTwinModal()">+ Create Digital Twin</button>
+            </div>
+            
+            <div id="twins-grid" class="twins-grid"></div>
+        </section>
+
+        <!-- Future Simulation Section (CORE INNOVATION) -->
+        <section id="simulate-section" class="section">
+            <div class="section-header">
+                <h2>🔮 Future Impact Simulation Engine</h2>
+                <p class="innovation-badge">FLAGSHIP INNOVATION</p>
+            </div>
+
+            <div class="simulation-container">
+                <!-- Left Panel: Controls -->
+                <div class="simulation-controls">
+                    <div class="control-group">
+                        <label>Select Digital Twin</label>
+                        <select id="sim-twin-select" onchange="loadTwinForSimulation()">
+                            <option value="">Choose a digital twin...</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Select Project (Optional)</label>
+                        <select id="sim-project-select">
+                            <option value="">No project / Custom simulation</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Target SDGs</label>
+                        <div id="sdg-selector" class="sdg-selector"></div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Scenario Type</label>
+                        <div class="scenario-buttons">
+                            <button class="scenario-btn active" data-scenario="success">✅ Project Success</button>
+                            <button class="scenario-btn" data-scenario="partial_success">⚠️ Partial Success</button>
+                            <button class="scenario-btn" data-scenario="delay">⏱️ Delayed</button>
+                            <button class="scenario-btn" data-scenario="failure">❌ Failure</button>
+                            <button class="scenario-btn" data-scenario="underfunded">💰 Underfunded</button>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label>Funding Level: <span id="funding-value">100</span>%</label>
+                        <input type="range" id="funding-slider" min="0" max="100" value="100" step="5">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Timeline: <span id="timeline-value">5</span> years</label>
+                        <input type="range" id="timeline-slider" min="1" max="10" value="5" step="1">
+                    </div>
+
+                    <div class="control-group">
+                        <label>Delay: <span id="delay-value">0</span> months</label>
+                        <input type="range" id="delay-slider" min="0" max="36" value="0" step="3">
+                    </div>
+
+                    <button class="btn btn-primary btn-large" onclick="runSimulation()">
+                        🚀 Run Simulation
+                    </button>
+
+                    <button class="btn btn-secondary" onclick="compareScenarios()">
+                        📊 Compare All Scenarios
+                    </button>
+                </div>
+
+                <!-- Right Panel: Results -->
+                <div class="simulation-results">
+                    <div id="simulation-output" class="simulation-output">
+                        <div class="placeholder">
+                            <div class="placeholder-icon">🎯</div>
+                            <h3>Ready to Predict the Future</h3>
+                            <p>Configure your simulation parameters and click "Run Simulation" to see what happens to your community's SDG indicators over time.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Projects Section -->
+        <section id="projects-section" class="section">
+            <div class="section-header">
+                <h2>SDG Projects</h2>
+                <button class="btn btn-primary" onclick="showCreateProjectModal()">+ New Project</button>
+            </div>
+            <div id="projects-grid" class="projects-grid"></div>
+        </section>
+
+        <!-- Organizations Section -->
+        <section id="orgs-section" class="section">
+            <div class="section-header">
+                <h2>Organizations</h2>
+                <button class="btn btn-primary" onclick="showCreateOrgModal()">+ Register Organization</button>
+            </div>
+            <div id="orgs-grid" class="orgs-grid"></div>
+        </section>
+    </div>
+
+    <!-- Create Digital Twin Modal -->
+    <div id="create-twin-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Digital Twin</h3>
+                <button class="modal-close" onclick="closeModal('create-twin-modal')">&times;</button>
+            </div>
+            <form id="create-twin-form" onsubmit="createDigitalTwin(event)">
+                <div class="form-group">
+                    <label>Twin Name *</label>
+                    <input type="text" name="name" required placeholder="e.g., Greater Mumbai Digital Twin">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Region/City *</label>
+                        <input type="text" name="region" required placeholder="e.g., Mumbai">
+                    </div>
+                    <div class="form-group">
+                        <label>Country *</label>
+                        <input type="text" name="country" required placeholder="e.g., India">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Population *</label>
+                        <input type="number" name="population" required placeholder="e.g., 12500000">
+                    </div>
+                    <div class="form-group">
+                        <label>Area (km²) *</label>
+                        <input type="number" step="0.01" name="area_km2" required placeholder="e.g., 603.4">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Region Type</label>
+                    <select name="region_type">
+                        <option value="developing_urban">Developing Urban</option>
+                        <option value="developed_urban">Developed Urban</option>
+                        <option value="rural">Rural</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3" placeholder="Describe this region/community..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Digital Twin</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Organization Modal -->
+    <div id="create-org-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Register Organization</h3>
+                <button class="modal-close" onclick="closeModal('create-org-modal')">&times;</button>
+            </div>
+            <form id="create-org-form" onsubmit="createOrganization(event)">
+                <div class="form-group">
+                    <label>Organization Name *</label>
+                    <input type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label>Type *</label>
+                    <select name="type" required>
+                        <option value="NGO">NGO</option>
+                        <option value="Government">Government Agency</option>
+                        <option value="Private">Private Sector</option>
+                        <option value="Academic">Academic Institution</option>
+                        <option value="International">International Organization</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Focus SDGs (select multiple)</label>
+                    <div id="org-sdg-selector" class="sdg-selector-compact"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Register</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Project Modal -->
+    <div id="create-project-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Project</h3>
+                <button class="modal-close" onclick="closeModal('create-project-modal')">&times;</button>
+            </div>
+            <form id="create-project-form" onsubmit="createProject(event)">
+                <div class="form-group">
+                    <label>Project Title *</label>
+                    <input type="text" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label>Organization *</label>
+                    <select name="organization_id" id="project-org-select" required>
+                        <option value="">Select organization...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Link to Digital Twin</label>
+                    <select name="digital_twin_id" id="project-twin-select">
+                        <option value="">None</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea name="description" rows="3" required></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Budget (USD) *</label>
+                        <input type="number" name="budget" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Timeline (months) *</label>
+                        <input type="number" name="timeline_months" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Target SDGs *</label>
+                    <div id="project-sdg-selector" class="sdg-selector-compact"></div>
+                </div>
+                <button type="submit" class="btn btn-primary">Create Project</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
