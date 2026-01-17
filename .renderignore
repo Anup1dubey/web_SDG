@@ -1,0 +1,19 @@
+# Ignore these files during Render deployment
+*.bat
+*.md
+!RENDER_DEPLOYMENT.md
+!RENDER_QUICKSTART.md
+.gitignore
+backend/sdg_platform.db
+backend/__pycache__/
+backend/.env
+.dist/
+*.pyc
+__pycache__/
+*.sqlite
+*.sqlite3
+node_modules/
+.vscode/
+.idea/
+*.log
+.DS_Store
