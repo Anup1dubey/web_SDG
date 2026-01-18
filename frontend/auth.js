@@ -1,6 +1,7 @@
 // Shared authentication utilities
 
-const API_BASE = 'http://localhost:8000';
+// API_BASE is now defined in config.js
+// This file should be loaded after config.js
 
 // Check if user is authenticated
 function isAuthenticated() {

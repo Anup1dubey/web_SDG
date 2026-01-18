@@ -1,6 +1,7 @@
 // SDG Digital Twin Platform - Frontend Application
 // API Configuration
-const API_BASE = 'http://localhost:8000';
+// API_BASE is now defined in config.js
+// This file should be loaded after config.js
 
 // Global state
 let currentTwin = null;

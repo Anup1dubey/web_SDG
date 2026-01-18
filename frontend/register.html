@@ -118,6 +118,7 @@
         </div>
     </div>
 
+    <script src="config.js"></script>
     <script src="auth.js"></script>
     <script>
         // Initialize SDG chips
@@ -178,7 +179,7 @@
             btnLoader.style.display = 'inline-block';
             
             try {
-                const response = await fetch('http://localhost:8000/auth/register', {
+                const response = await fetch(`${API_BASE}/auth/register`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
